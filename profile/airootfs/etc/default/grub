@@ -1,0 +1,10 @@
+# Hyper OS — GRUB configuration for the installed system.
+# GRUB_THEME points at the Hyper OS theme shipped with the image.
+GRUB_DEFAULT=0
+GRUB_TIMEOUT=5
+GRUB_DISTRIBUTOR="Hyper OS"
+GRUB_CMDLINE_LINUX_DEFAULT="quiet"
+GRUB_CMDLINE_LINUX=""
+GRUB_THEME="/usr/share/grub/themes/hyper-os/theme.txt"
+GRUB_GFXMODE=1920x1080,1280x720,auto
+GRUB_DISABLE_RECOVERY="true"

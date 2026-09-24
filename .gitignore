@@ -1,0 +1,14 @@
+/# build artifacts
+/work/
+/out/
+/localrepo/
+*.iso
+*.pkg.tar.zst
+
+/profile/airootfs/etc/skel/
+/profile/airootfs/etc/calamares/branding/hyper-os/*.png
+/profile/airootfs/usr/share/hyper/wallpapers/
+/profile/airootfs/usr/share/grub/themes/hyper-os/desktop.png
+/profile/airootfs/etc/sddm/themes/hyper-bolt/*.png
+/profile/airootfs/etc/sddm/themes/hyper-bolt/*.jpg
+/profile/syslinux/splash.png/vmdisk.img

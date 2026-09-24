@@ -1,0 +1,7 @@
+[Desktop Entry]
+Name=Hyper (Hyprland)
+Comment=Hyper OS session on Hyprland
+Exec=/usr/local/bin/hyper-session
+Type=Application
+DesktopNames=Hyprland
+X-KDE-PluginInfo-Name=hyper

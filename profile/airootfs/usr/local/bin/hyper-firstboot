@@ -1,0 +1,31 @@
+#!/bin/bash
+# hyper-firstboot
+#
+# One-time first-login wizard for freshly installed systems. Waits for
+# the desktop to be up, greets the user, and hands off to Hyper Setup.
+#
+# --once   only when the per-user "seen" flag is absent (built in)
+
+set -u
+MARK="$HOME/.config/hyper/first-boot-seen"
+
+main() {
+    # never on the live medium, never twice
+    [ -d /run/archiso ] && exit 0
+    [ -f "$MARK" ] && exit 0
+
+    # give the compositor a breath before popping a dialog
+    sleep 6
+
+    if command -v zenity >/dev/null 2>&1; then
+        if zenity --question \
+            --title="Welcome to Hyper OS" \
+            --text="Everything is set up and the machine is yours.\n\nWould you like to finish a few optional bits (GPU drivers, software profiles, wallpaper)?" \
+            --ok-label="Hyper Setup" --cancel-label="Later" 2>/dev/null; then
+            /usr/local/bin/hyper-setup gui
+        fi
+    fi
+    touch "$MARK"
+}
+
+main

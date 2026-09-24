@@ -1,0 +1,43 @@
+---
+componentName:        "hyper-os"
+welcomeStyleCalamares: true
+showPromptInstall:    false
+windowExpanding:      normal
+windowSize:           780
+showDebugInfo:        false
+
+strings:
+  productName:          "Hyper OS"
+  shortProductName:     "Hyper"
+  version:              "2026.09.23"
+  shortVersion:         "2026.09.23"
+  versionedName:        "Hyper OS 2026.09.23"
+  shortVersionedName:   "Hyper 2026.09.23"
+  bootloaderEntryName:  "HyperOS"
+  productUrl:           "https://github.com/ilyamiro"
+  supportUrl:           "https://github.com/ilyamiro"
+  releaseNotesUrl:      "https://github.com/ilyamiro/releases"
+
+images:
+  productIcon:          "bolt.png"
+  productLogo:          "logo.png"
+  productWelcome:       "welcome.png"
+
+style:
+  SidebarBackground:        "#0f1115"
+  SidebarText:              "#e9edf4"
+  SidebarTextCurrent:       "#0f1115"
+  SidebarBackgroundCurrent: "#ffd60a"
+
+fonts:
+  fontFamily:           "Noto Sans, Cantarell, sans-serif"
+  fixedFontFamily:      "Noto Sans Mono"
+
+slideshow:               "show.qml"
+slideshowAPI:            1
+
+support:
+  knownIssuesUrl:   ""
+  releaseNotesUrl:  ""
+  donateUrl:        ""
+  linkColor:        "#ffd60a"

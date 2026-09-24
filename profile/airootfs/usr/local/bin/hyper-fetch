@@ -1,0 +1,4 @@
+#!/bin/bash
+# Show the boxart, the way it looks out of the box.
+
+exec fastfetch -c /usr/share/hyper/fastfetch/config.jsonc

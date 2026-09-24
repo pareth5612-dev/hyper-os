@@ -1,0 +1,9 @@
+polkit.addRule(function(action, subject) {
+    // The live user (and anyone in wheel) may launch the installer
+    // and driver tooling without a password prompt.
+    if (subject.isInGroup("wheel")) {
+        if (action.id == "org.freedesktop.policykit.exec") {
+            return polkit.Result.YES;
+        }
+    }
+});

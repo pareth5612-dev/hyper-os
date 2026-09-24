@@ -1,0 +1,15 @@
+#!/bin/bash
+# Session wrapper for Hyper OS: applies GPU tweaks, fires the one-time
+# first boot setup, then hands over to Hyprland.
+
+# Environmen supplied by hyper-gpu-detect (systemd environment.d may not
+# reach the session shell, so source it by hand too).
+if [ -r /etc/environment.d/99-hyper-gpu.conf ]; then
+    set -a
+    . /etc/environment.d/99-hyper-gpu.conf
+    set +a
+fi
+
+hyper-firstboot --once
+
+exec Hyprland

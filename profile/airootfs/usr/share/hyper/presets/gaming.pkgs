@@ -1,0 +1,11 @@
+# Gaming profile — steam, wine stack, and performance tooling.
+steam
+wine
+winetricks
+wine-gecko
+wine-mono
+gamemode
+mangohud
+lib32-mangohud
+lutris
+lib32-vulkan-icd-loader

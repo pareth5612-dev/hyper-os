@@ -1,0 +1,36 @@
+# Hyper OS — GRUB 2 theme
+
+desktop-color: "#0f1115"
+desktop-image: "desktop.png"
+
+terminal-font: "Unifont Regular 16"
+terminal-border-color: "#ffd60a"
+terminal-box: "menu_*.tga"
+terminal-left: 10%
+terminal-right: 10%
+terminal-top: 80%
+terminal-bottom: 92%
+
+title-text: "Hyper OS"
+title-color: "#ffffff"
+title-font: "Unifont Regular 16"
+title-align: "center"
+title-left: 0%
+title-right: 0%
+title-top: 12%
+
+boot_menu {
+    left = 20%
+    top = 25%
+    width = 60%
+    height = 45%
+    item_font = "Unifont Regular 16"
+    item_color = "#8a8f98"
+    selected_item_color = "#ffd60a"
+    item_height = 36
+    item_padding = 14
+    item_spacing = 10
+    icon_width = 36
+    icon_height = 36
+    icons = no
+}

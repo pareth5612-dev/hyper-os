@@ -1,0 +1,17 @@
+[Unit]
+Description=Prepare the Hyper OS live desktop user
+Documentation=man:hyper-live-setup(8)
+# Not conditioned on /run/archiso in the unit: on a fresh live-medium boot
+# the marker can appear a moment after the unit is queued, failing a oneshot
+# with no retry. The script waits for the marker and guards itself instead.
+# The unit (and script) are stripped from installed systems by the installer.
+After=local-fs.target
+Before=display-manager.service graphical.target
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+ExecStart=/usr/local/bin/hyper-live-setup
+
+[Install]
+WantedBy=multi-user.target

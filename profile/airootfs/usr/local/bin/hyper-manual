@@ -1,0 +1,46 @@
+#!/bin/bash
+# hyper-manual — the interactive/CLI installer path.
+#
+# Reached from the "Manual install" boot entry or by running this from
+# a live terminal. No bloat, no hand-holding: just a tip sheet and a
+# working root shell (or archinstall when you want a guided CLI ride).
+
+SCRIPTNAME=hyper-manual
+
+cat <<'EOF'
+
+   ▓▓ H Y P E R   O S  ▓▓  — manual install
+
+   Two roads ahead:
+
+   1) Guided CLI    run:  archinstall
+      (archinstall ships with Hyper OS; pick your disk and packages there)
+
+   2) Hands-on      CTRL+ALT+F1 gave you root; you can also just wheel
+      the terminal and do the classic manual dance:
+        cfdisk /dev/sdX
+        mkfs.fat -F32 /dev/sdX1
+        mkfs.btrfs  /dev/sdX2
+        mount /dev/sdX2 /mnt && mount --mkdir /dev/sdX1 /mnt/boot
+        pacstrap -K /mnt base hyprland kitty
+        genfstab -U /mnt >> /mnt/etc/fstab
+        arch-chroot /mnt
+      `hyper-setup` and all dotfiles live in /etc/skel — copy them in:
+        cp -a /etc/skel/. /root/   (after arch-chroot)
+
+   Everything the graphical installer orchestrates is scripted under
+   /usr/local/bin (hyper-gpu-detect, hyper-setup, hyper-switch) and is
+   safe to reuse on any installation.
+
+EOF
+
+menu="[1] Launch archinstall [2] Stay in a raw shell [q] Back to desktop"
+while true; do
+    read -rp "What's it going to be? $menu > " ans
+    case "$ans" in
+        1) exec archinstall ;;
+        2) echo "Official shell time. root, no password." ; exec /usr/bin/zsh ;;
+        q|Q) exit 0 ;;
+        *) echo "pick one: 1, 2 or q" ;;
+    esac
+done

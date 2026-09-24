@@ -1,0 +1,69 @@
+#!/bin/bash
+# hyper-switch
+#
+# Quick wallpaper + theme switcher. Rotates the bundled Hyper OS
+# wallpapers and, when matugen is available, regenerates the entire
+# color theme from the new wallpaper.
+#
+# usage: hyper-switch [wallpaper|random|last|gui]
+
+set -u
+WALLS=/usr/share/hyper/wallpapers
+STATE=$HOME/.cache/hyper/wallpaper
+
+mkdir -p "$(dirname "$STATE")"
+
+pick() {
+    local which="${1:-next}"
+    local cur="" list=()
+    [ -f "$STATE" ] && cur=$(<"$STATE")
+    list=( "$WALLS"/*.{png,jpg,jpeg,webp} 2>/dev/null )
+    # strip the brace-expansion miss
+    for i in "${!list[@]}"; do
+        case "${list[$i]}" in *'*') unset 'list[$i]' ;; esac
+    done
+    [ ${#list[@]} -eq 0 ] && { echo "hyper-switch: no wallpapers in $WALLS" >&2; return 1; }
+
+    case "$which" in
+        random) echo "${list[$((RANDOM % ${#list[@]}))]}" ;;
+        last)   [ -n "$cur" ] && echo "$cur" || echo "${list[0]}" ;;
+        gui)    ;;
+        *)      if [ -f "$which" ]; then echo "$which"
+                else echo "$WALLS/$which"
+                fi ;;
+    esac
+}
+
+apply() {
+    local w="$1"
+    echo "$w" > "$STATE"
+
+    if command -v swww >/dev/null; then
+        swww img "$w" --transition-type=simple 2>/dev/null
+    elif command -v hyprctl >/dev/null; then
+        hyprctl hyprpaper preload "$w" >/dev/null 2>&1
+        hyprctl hyprpaper wallpaper ",$w" >/dev/null 2>&1
+    fi
+
+    # regenerate the color theme from the wallpaper
+    if command -v matugen >/dev/null; then
+        matugen image "$w" >/dev/null 2>&1
+        # give the shell a kick to pick up new colors
+        command -v notify-send >/dev/null \
+            && notify-send -a hyper-switch "Theme swapped" "$(basename "$w")"
+    fi
+    echo "hyper-switch: "$(basename "$w")
+}
+
+case "${1:-next}" in
+    -h|--help) echo "usage: $0 [wallpaper|random|last|gui]"; exit 0 ;;
+    gui)  w=$(zenity --list --title="Hyper wallpaper" \
+            --width=320 --height=420 \
+            --column="Wallpaper" \
+            $(for f in "$WALLS"/*; do basename "$f"; done) 2>/dev/null)
+          [ -z "$w" ] && exit 0
+          apply "$WALLS/$w" ;;
+    random) apply "$(pick random)" ;;
+    last)   apply "$(pick last)" ;;
+    *)      apply "$(pick "$1")" ;;
+esac

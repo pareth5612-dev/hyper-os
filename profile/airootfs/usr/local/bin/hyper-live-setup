@@ -1,0 +1,37 @@
+#!/bin/bash
+# Creates the live desktop user and the SDDM autologin so a fresh
+# Hyper OS USB boots straight into the graphical installer.
+# Guards on the live-medium marker (with a bounded wait); the installed
+# system never runs this (unit and script are stripped by the installer).
+
+# wait (bounded) for the live-medium marker to appear, then stop if not live
+marker=/run/archiso
+for _ in $(seq 1 30); do
+    [ -d "$marker" ] && break
+    sleep 1
+done
+[ -d "$marker" ] || { echo "hyper-live-setup: not on the live medium; skipping"; exit 0; }
+
+if getent passwd hyper >/dev/null 2>&1; then
+    echo "hyper-live-setup: live user already present"
+    exit 0
+fi
+
+useradd -m -k /etc/skel \
+    -G wheel,audio,video,storage,input,users \
+    -s /usr/bin/zsh -c "Hyper OS live user" hyper
+if [ $? -ne 0 ]; then
+    echo "hyper-live-setup: failed to create live user" >&2
+    exit 1
+fi
+
+echo "hyper:hyper" | chpasswd
+
+mkdir -p /etc/sddm.conf.d
+cat > /etc/sddm.conf.d/10-live-autologin.conf <<'EOF'
+[Autologin]
+User=hyper
+Session=hyper
+EOF
+
+echo "hyper-live-setup: live user ready"

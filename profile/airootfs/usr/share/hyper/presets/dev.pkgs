@@ -1,0 +1,11 @@
+# Development profile — languages, containers, editor.
+python
+python-pip
+nodejs
+npm
+go
+rust
+docker
+docker-compose
+code
+git-lfs

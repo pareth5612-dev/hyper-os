@@ -1,0 +1,113 @@
+#!/bin/bash
+# hyper-gpu-detect
+#
+# Detects the primary GPU, writes Hyprland-friendly driver environment
+# variables, and (opt-in) installs the matching driver stack.
+#
+# usage: hyper-gpu-detect [-q] [-i] [ROOT]
+#   -q   quiet; print nothing, never prompt
+#   -i   install drivers (requires root; e.g. first boot wizard)
+#   ROOT target root prefix, default "/" (use a mountpoint during install)
+#
+# The env file lands in <ROOT>/etc/environment.d/99-hyper-gpu.conf and is
+# sourced by hyper-session as well as applied by systemd to user services.
+
+set -u
+
+QUIET=0
+INSTALL=0
+ROOT="/"
+
+while [ $# -gt 0 ]; do
+    case "$1" in
+        -q) QUIET=1 ;;
+        -i) INSTALL=1 ;;
+        -*) echo "usage: $0 [-q] [-i] [root]" >&2; exit 1 ;;
+         *) ROOT="$1" ;;
+    esac
+    shift
+done
+
+msg() { [ "$QUIET" = "1" ] || echo "hyper-gpu-detect: $1"; }
+
+# -- detect ------------------------------------------------------------------
+VENDOR="unknown"
+LINES=$(lspci -nn 2>/dev/null | grep -Ei 'vga compatible|3d controller|display controller')
+[ -z "$LINES" ] && { msg "no GPU found via lspci (maybe a VM?)"; }
+
+if echo "$LINES" | grep -qi 'nvidia'; then
+    VENDOR="nvidia"
+elif echo "$LINES" | grep -qi 'amd\|advanced micro devices\|ati'; then
+    VENDOR="amd"
+elif echo "$LINES" | grep -qi 'intel'; then
+    VENDOR="intel"
+fi
+msg "detected primary GPU vendor: $VENDOR"
+
+# -- env file ----------------------------------------------------------------
+ENVDIR="${ROOT%/}/etc/environment.d"
+ENVF="$ENVDIR/99-hyper-gpu.conf"
+mkdir -p "$ENVDIR"
+
+case "$VENDOR" in
+    nvidia)
+        cat > "$ENVF" <<'EOF'
+# Hyper OS - NVIDIA (Hyprland wants these; do not remove)
+NVD_BACKEND=direct
+LIBVA_DRIVER_NAME=nvidia
+GBM_BACKEND=nvidia-drm
+__GLX_VENDOR_LIBRARY_NAME=nvidia
+__VK_LAYER_NV_optimus=NVIDIA_only
+WLR_NO_HARDWARE_CURSORS=1
+EOF
+        ;;
+    amd)
+        cat > "$ENVF" <<'EOF'
+# Hyper OS - AMD (mostly autodetected; kept explicit for consistency)
+LIBVA_DRIVER_NAME=radeonsi
+VDPAU_DRIVER=radeonsi
+AMD_VULKAN_ICD=RADV
+EOF
+        ;;
+    intel)
+        cat > "$ENVF" <<'EOF'
+# Hyper OS - Intel (explicit VA-API backend)
+LIBVA_DRIVER_NAME=iHD
+VDPAU_DRIVER=va_gl
+EOF
+        ;;
+    *)
+        # Leave a stub so hyper-session has something to source.
+        cat > "$ENVF" <<'EOF'
+# Hyper OS - no discrete GPU detected; defaults apply
+EOF
+        ;;
+esac
+msg "wrote $ENVF"
+
+# remember what we found for the first boot wizard
+mkdir -p "${ROOT%/}/etc/hyper"
+echo "gpu=$VENDOR" > "${ROOT%/}/etc/hyper/gpu"
+
+# -- optional driver install -------------------------------------------------
+if [ "$INSTALL" = "1" ]; then
+    if [ "$(id -u)" != "0" ]; then
+        msg "skipping driver install: not root (rerun with pkexec/sudo -i)"
+        exit 0
+    fi
+    case "$VENDOR" in
+        nvidia)
+            msg "installing NVIDIA proprietary drivers (nvidia-open)"
+            pacman -S --noconfirm --needed nvidia-open nvidia-utils \
+                libva-nvidia-driver vulkan-icd-loader 2>/dev/null
+            ;;
+        amd)
+            msg "AMD drivers ship inside this system already (mesa)"
+            ;;
+        intel)
+            msg "Intel drivers ship inside this system already (mesa)"
+            ;;
+    esac
+fi
+
+exit 0

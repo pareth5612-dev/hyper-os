@@ -1,0 +1,21 @@
+████████
+    ██████████
+   ████████████
+  ██████████████
+  ██████████
+ ██████
+████
+
+  Welcome to Hyper OS live.
+
+  Install:   the installer opens automatically on the desktop.
+             Picking "Manual install" in the boot menu drops you
+             into a terminal instead.
+
+  Live user:      hyper  /  password: hyper
+  Manual shell:   CTRL+ALT+F1  (root, no password)
+  Guide:          run `hyper-manual` in the live terminal
+
+  The desktop session and installer were configured by ilyamiro's
+  dotfiles — see https://github.com/ilyamiro for the sorcery behind
+  the theming and keybinds.

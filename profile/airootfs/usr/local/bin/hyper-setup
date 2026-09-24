@@ -1,0 +1,75 @@
+#!/bin/bash
+# hyper-setup
+#
+# Software profiles for Hyper OS: install the package bundles defined in
+# /usr/share/hyper/presets/*.pkgs and remember the user's choices in
+# /etc/hyper/presets.
+#
+# usage: hyper-setup list
+#        hyper-setup [enable|disable] <profile>...
+#        hyper-setup gui
+
+set -u
+DIR=/usr/share/hyper/presets
+STATE=/etc/hyper/presets
+
+[ -d "$DIR" ] || { echo "$0: presets dir missing ($DIR)" >&2; exit 1; }
+mkdir -p /etc/hyper
+
+usage() {
+    echo "usage: $0 list | [enable|disable] <profile>..."
+    return 0
+}
+
+list() {
+    echo "available profiles:"
+    for f in "$DIR"/*.pkgs; do
+        n=$(basename "$f" .pkgs)
+        if grep -q "^$n\$" "$STATE" 2>/dev/null; then
+            echo "  [$n]  (enabled)"
+        else
+            echo "  [ ]  $n"
+        fi
+    done
+}
+
+enable() {
+    for n in "$@"; do
+        f="$DIR/$n.pkgs"
+        [ -f "$f" ] || { echo "$0: unknown profile: '$n'" >&2; continue; }
+        pkgs=$(grep -v '^#' "$f" | grep -v '^$' | tr '\n' ' ')
+        echo "hyper-setup: installing '$n': $pkgs"
+        if [ -n "$pkgs" ] && ! pacman -S --needed --noconfirm $pkgs; then
+            echo "$0: package install failed for '$n'" >&2
+        fi
+        echo "$n" >> "$STATE"
+        sort -u -o "$STATE" "$STATE"
+    done
+}
+
+disable() {
+    for n in "$@"; do
+        [ -f "$DIR/$n.pkgs" ] || { echo "$0: unknown profile: '$n'" >&2; continue; }
+        sed -i "/^$n\$/d" "$STATE"
+        echo "hyper-setup: '$n' disabled (packages are left installed)"
+    done
+}
+
+gui() {
+    command -v zenity >/dev/null || { echo "$0: zenity not installed" >&2; exit 1; }
+    choice=$(zenity --list \
+        --title="Hyper Setup" --column="Profile" --column="What you get" \
+        standard "No extras, keep it lean" \
+        gaming "Steam, Wine, Lutris, GameMode, MangoHud" \
+        dev "Python, Node, Go, Rust, Docker, VS Code" 2>/dev/null)
+    [ -z "$choice" ] && exit 0
+    pkexec "$0" enable "$choice"
+}
+
+case "${1:-}" in
+    list)    list ;;
+    enable)  shift; [ $# -gt 0 ] && enable "$@" || { echo "missing profile(s)"; usage; exit 1; } ;;
+    disable) shift; [ $# -gt 0 ] && disable "$@" || { echo "missing profile(s)"; usage; exit 1; } ;;
+    gui)     gui ;;
+    *)       if [ -n "${1:-}" ]; then echo "unknown command: $1" >&2; fi; usage; exit 1 ;;
+esac

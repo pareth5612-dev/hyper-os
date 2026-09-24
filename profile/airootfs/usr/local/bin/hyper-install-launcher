@@ -1,0 +1,22 @@
+#!/bin/bash
+# Auto-starts the graphical installer when the live desktop appears.
+# Polkit (see /usr/share/polkit-1/rules.d/) lets the live user elevate
+# without typing anything.
+
+# desktop not installed / already installing / not on the live medium
+[ -x /usr/bin/calamares ]        || exit 0
+[ -d /run/archiso ]              || exit 0
+pgrep -f calamares >/dev/null    && exit 0
+
+# let the desktop breathe a little, then fire the installer
+sleep 10
+
+# Calamares must run as root. pkexec strips the environment, so launch
+# the installer through systemd-run (as root) carrying the session's
+# Wayland variables across; Qt/QML then talks to the live compositor.
+exec pkexec /usr/bin/systemd-run --collect --unit=hypercalamares \
+    --setenv=WAYLAND_DISPLAY="$WAYLAND_DISPLAY" \
+    --setenv=XDG_RUNTIME_DIR="$XDG_RUNTIME_DIR" \
+    --setenv=DBUS_SESSION_BUS_ADDRESS="$DBUS_SESSION_BUS_ADDRESS" \
+    --setenv=QT_QPA_PLATFORM=wayland \
+    /usr/bin/calamares

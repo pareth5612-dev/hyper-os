@@ -1,0 +1,9 @@
+[SddmGreeterTheme]
+Name=hyper-bolt
+Comment=Hyper OS SDDM login theme
+Type=sddm-theme
+Theme-Id=hyper-bolt
+Theme-API=2.0
+QtVersion=6
+MainScript=Main.qml
+ConfigFile=theme.conf
